@@ -117,6 +117,8 @@ public class ImagePickerController: UIViewController {
 
     statusBarHidden = UIApplication.sharedApplication().statusBarHidden
     UIApplication.sharedApplication().setStatusBarHidden(true, withAnimation: .Fade)
+    
+    rotateToDeviceOrientation()
   }
 
   public override func viewDidAppear(animated: Bool) {
@@ -324,6 +326,29 @@ public class ImagePickerController: UIViewController {
       action()
     }
   }
+  
+  private func rotateToDeviceOrientation() {
+    let rotate = Helper.rotationTransform()
+    
+    UIView.animateWithDuration(0.25) {
+      [self.topView.rotateCamera, self.bottomContainer.pickerButton,
+        self.bottomContainer.stackView, self.bottomContainer.doneButton].forEach {
+          $0.transform = rotate
+      }
+      
+      self.galleryView.collectionViewLayout.invalidateLayout()
+      
+      let translate: CGAffineTransform
+      if [UIDeviceOrientation.LandscapeLeft, UIDeviceOrientation.LandscapeRight]
+        .contains(UIDevice.currentDevice().orientation) {
+        translate = CGAffineTransformMakeTranslation(-20, 15)
+      } else {
+        translate = CGAffineTransformIdentity
+      }
+      
+      self.topView.flashButton.transform = CGAffineTransformConcat(rotate, translate)
+    }
+  }
 }
 
 // MARK: - Action methods
@@ -398,26 +423,7 @@ extension ImagePickerController: CameraViewDelegate {
   }
 
   public func handleRotation(note: NSNotification) {
-    let rotate = Helper.rotationTransform()
-
-    UIView.animateWithDuration(0.25) {
-      [self.topView.rotateCamera, self.bottomContainer.pickerButton,
-        self.bottomContainer.stackView, self.bottomContainer.doneButton].forEach {
-        $0.transform = rotate
-      }
-
-      self.galleryView.collectionViewLayout.invalidateLayout()
-
-      let translate: CGAffineTransform
-      if [UIDeviceOrientation.LandscapeLeft, UIDeviceOrientation.LandscapeRight]
-        .contains(UIDevice.currentDevice().orientation) {
-        translate = CGAffineTransformMakeTranslation(-20, 15)
-      } else {
-        translate = CGAffineTransformIdentity
-      }
-
-      self.topView.flashButton.transform = CGAffineTransformConcat(rotate, translate)
-    }
+    rotateToDeviceOrientation()
   }
 }
 
