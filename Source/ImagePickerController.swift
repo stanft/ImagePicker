@@ -411,7 +411,10 @@ extension ImagePickerController: CameraViewDelegate {
   // MARK: - Rotation
 
   public override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-    return .All
+    if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
+      return .All
+    }
+    return .Portrait
   }
 
   public func handleRotation(note: NSNotification) {
@@ -419,11 +422,10 @@ extension ImagePickerController: CameraViewDelegate {
                                y: totalSize.height - bottomContainer.frame.height - ImageGalleryView.Dimensions.galleryHeight,
                                width: totalSize.width,
                                height: ImageGalleryView.Dimensions.galleryHeight)
-
     galleryView.updateFrames()
-
-    //cameraController.updateCameraOrientation()
-    // rotateToDeviceOrientation()
+    if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
+       rotateToDeviceOrientation()
+    }
   }
 }
 
