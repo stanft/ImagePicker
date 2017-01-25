@@ -1,18 +1,11 @@
 import UIKit
 import Photos
 
-protocol ImageGalleryPanGestureDelegate: class {
-
-  func panGestureDidStart()
-  func panGestureDidChange(translation: CGPoint)
-  func panGestureDidEnd(translation: CGPoint, velocity: CGPoint)
-}
-
 public class ImageGalleryView: UIView {
 
   struct Dimensions {
     static let galleryHeight: CGFloat = 160
-    static let galleryBarHeight: CGFloat = 24
+    static let galleryBarHeight: CGFloat = 10
   }
 
   lazy public var collectionView: UICollectionView = { [unowned self] in
@@ -40,17 +33,9 @@ public class ImageGalleryView: UIView {
   lazy var topSeparator: UIView = { [unowned self] in
     let view = UIView()
     view.translatesAutoresizingMaskIntoConstraints = false
-    view.addGestureRecognizer(self.panGestureRecognizer)
     view.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.6)
 
     return view
-    }()
-
-  lazy var panGestureRecognizer: UIPanGestureRecognizer = { [unowned self] in
-    let gesture = UIPanGestureRecognizer()
-    gesture.addTarget(self, action: #selector(handlePanGestureRecognizer(_:)))
-
-    return gesture
     }()
 
   public lazy var noImagesLabel: UILabel = { [unowned self] in
@@ -68,7 +53,6 @@ public class ImageGalleryView: UIView {
   public lazy var selectedStack = ImageStack()
   lazy var assets = [PHAsset]()
 
-  weak var delegate: ImageGalleryPanGestureDelegate?
   var collectionSize: CGSize?
   var shouldTransform = false
   var imagesBeforeLoading = 0
@@ -87,8 +71,6 @@ public class ImageGalleryView: UIView {
       forCellWithReuseIdentifier: CollectionView.reusableIdentifier)
 
     [collectionView, topSeparator].forEach { addSubview($0) }
-
-    topSeparator.addSubview(Configuration.indicatorView)
 
     imagesBeforeLoading = 0
     fetchPhotos()
@@ -111,8 +93,6 @@ public class ImageGalleryView: UIView {
     let collectionFrame = frame.height == Dimensions.galleryBarHeight ? 100 + Dimensions.galleryBarHeight : frame.height
     topSeparator.frame = CGRect(x: 0, y: 0, width: totalWidth, height: Dimensions.galleryBarHeight)
     topSeparator.autoresizingMask = [.FlexibleLeftMargin, .FlexibleRightMargin, .FlexibleWidth]
-    Configuration.indicatorView.frame = CGRect(x: (totalWidth - Configuration.indicatorWidth) / 2, y: (topSeparator.frame.height - Configuration.indicatorHeight) / 2,
-      width: Configuration.indicatorWidth, height: Configuration.indicatorHeight)
     collectionView.frame = CGRect(x: 0, y: topSeparator.frame.height, width: totalWidth, height: collectionFrame - topSeparator.frame.height)
     collectionSize = CGSize(width: collectionView.frame.height, height: collectionView.frame.height)
 
@@ -142,25 +122,6 @@ public class ImageGalleryView: UIView {
       self.collectionView.reloadData()
 
       completion?()
-    }
-  }
-
-  // MARK: - Pan gesture recognizer
-
-  func handlePanGestureRecognizer(gesture: UIPanGestureRecognizer) {
-    guard let superview = superview else { return }
-
-    let translation = gesture.translationInView(superview)
-    let velocity = gesture.velocityInView(superview)
-
-    switch gesture.state {
-    case .Began:
-      delegate?.panGestureDidStart()
-    case .Changed:
-      delegate?.panGestureDidChange(translation)
-    case .Ended:
-      delegate?.panGestureDidEnd(translation, velocity: velocity)
-    default: break
     }
   }
 

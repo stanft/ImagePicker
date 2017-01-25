@@ -20,7 +20,6 @@ public class ImagePickerController: UIViewController {
 
   public lazy var galleryView: ImageGalleryView = { [unowned self] in
     let galleryView = ImageGalleryView()
-    galleryView.delegate = self
     galleryView.selectedStack = self.stack
     galleryView.collectionView.layer.anchorPoint = CGPoint(x: 0, y: 0)
     galleryView.imageLimit = self.imageLimit
@@ -30,7 +29,7 @@ public class ImagePickerController: UIViewController {
 
   public lazy var bottomContainer: BottomContainerView = { [unowned self] in
     let view = BottomContainerView()
-    view.backgroundColor = UIColor(red: 0.09, green: 0.11, blue: 0.13, alpha: 1)
+    view.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.6)
     view.delegate = self
 
     return view
@@ -50,13 +49,6 @@ public class ImagePickerController: UIViewController {
     controller.startOnFrontCamera = self.startOnFrontCamera
 
     return controller
-    }()
-
-  lazy var panGestureRecognizer: UIPanGestureRecognizer = { [unowned self] in
-    let gesture = UIPanGestureRecognizer()
-    gesture.addTarget(self, action: #selector(panGestureRecognizerHandler(_:)))
-
-    return gesture
     }()
 
   lazy var volumeView: MPVolumeView = { [unowned self] in
@@ -104,8 +96,6 @@ public class ImagePickerController: UIViewController {
     view.backgroundColor = .whiteColor()
     view.backgroundColor = Configuration.mainColor
 
-    cameraController.view.addGestureRecognizer(panGestureRecognizer)
-
     subscribe()
     setupConstraints()
   }
@@ -117,8 +107,6 @@ public class ImagePickerController: UIViewController {
 
     statusBarHidden = UIApplication.sharedApplication().statusBarHidden
     UIApplication.sharedApplication().setStatusBarHidden(true, withAnimation: .Fade)
-    
-    rotateToDeviceOrientation()
   }
 
   public override func viewDidAppear(animated: Bool) {
@@ -145,7 +133,7 @@ public class ImagePickerController: UIViewController {
     super.viewWillDisappear(animated)
     UIApplication.sharedApplication().setStatusBarHidden(statusBarHidden, withAnimation: .Fade)
   }
-
+  
   public func resetAssets() {
     self.stack.resetAssets([])
   }
@@ -195,7 +183,11 @@ public class ImagePickerController: UIViewController {
     galleryView.canFetchImages = false
     enableGestures(true)
   }
-
+  
+  public override func shouldAutorotate() -> Bool {
+    return true
+  }
+    
   // MARK: - Notifications
 
   deinit {
@@ -419,11 +411,19 @@ extension ImagePickerController: CameraViewDelegate {
   // MARK: - Rotation
 
   public override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-    return .Portrait
+    return .All
   }
 
   public func handleRotation(note: NSNotification) {
-    rotateToDeviceOrientation()
+    galleryView.frame = CGRect(x: 0,
+                               y: totalSize.height - bottomContainer.frame.height - ImageGalleryView.Dimensions.galleryHeight,
+                               width: totalSize.width,
+                               height: ImageGalleryView.Dimensions.galleryHeight)
+
+    galleryView.updateFrames()
+
+    //cameraController.updateCameraOrientation()
+    // rotateToDeviceOrientation()
   }
 }
 
@@ -437,74 +437,5 @@ extension ImagePickerController: TopViewDelegate {
 
   func rotateDeviceDidPress() {
     cameraController.rotateCamera()
-  }
-}
-
-// MARK: - Pan gesture handler
-
-extension ImagePickerController: ImageGalleryPanGestureDelegate {
-
-  func panGestureDidStart() {
-    guard let collectionSize = galleryView.collectionSize else { return }
-
-    initialFrame = galleryView.frame
-    initialContentOffset = galleryView.collectionView.contentOffset
-    if let contentOffset = initialContentOffset { numberOfCells = Int(contentOffset.x / collectionSize.width) }
-  }
-
-  func panGestureRecognizerHandler(gesture: UIPanGestureRecognizer) {
-    let translation = gesture.translationInView(view)
-    let velocity = gesture.velocityInView(view)
-
-    if gesture.locationInView(view).y > galleryView.frame.origin.y - 25 {
-      gesture.state == .Began ? panGestureDidStart() : panGestureDidChange(translation)
-    }
-
-    if gesture.state == .Ended {
-      panGestureDidEnd(translation, velocity: velocity)
-    }
-  }
-
-  func panGestureDidChange(translation: CGPoint) {
-    guard let initialFrame = initialFrame else { return }
-
-    let galleryHeight = initialFrame.height - translation.y
-
-    if galleryHeight >= GestureConstants.maximumHeight { return }
-
-    if galleryHeight <= ImageGalleryView.Dimensions.galleryBarHeight {
-      updateGalleryViewFrames(ImageGalleryView.Dimensions.galleryBarHeight)
-
-    } else if galleryHeight >= GestureConstants.minimumHeight {
-
-      let scale = (galleryHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
-      galleryView.collectionView.transform = CGAffineTransformMakeScale(scale, scale)
-      galleryView.frame.origin.y = initialFrame.origin.y + translation.y
-      galleryView.frame.size.height = initialFrame.height - translation.y
-
-      let value = view.frame.width * (scale - 1) / scale
-      galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
-
-    } else {
-
-      galleryView.frame.origin.y = initialFrame.origin.y + translation.y
-      galleryView.frame.size.height = initialFrame.height - translation.y
-    }
-
-    galleryView.updateNoImagesLabel()
-  }
-
-  func panGestureDidEnd(translation: CGPoint, velocity: CGPoint) {
-    guard let initialFrame = initialFrame else { return }
-
-    let galleryHeight = initialFrame.height - translation.y
-
-    if galleryView.frame.height < GestureConstants.minimumHeight && velocity.y < 0 {
-      showGalleryView()
-    } else if velocity.y < -GestureConstants.velocity {
-      expandGalleryView()
-    } else if velocity.y > GestureConstants.velocity || galleryHeight < GestureConstants.minimumHeight {
-      collapseGalleryView(nil)
-    }
   }
 }
