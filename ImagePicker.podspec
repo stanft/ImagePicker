@@ -1,12 +1,11 @@
 Pod::Spec.new do |s|
   s.name             = "ImagePicker"
   s.summary          = "Reinventing the way ImagePicker works."
-  s.version          = "1.4.2"
+  s.version          = "1.5.0"
   s.homepage         = "https://github.com/stanft/ImagePicker"
   s.license          = 'MIT'
-  s.author           = { "Hyper Interaktiv AS" => "ios@hyper.no" }
+  s.author           = { "Hyper Interaktiv AS" => "ios@hyper.no", "Stephan Anft" => "stephan.anft@lhind.dlh.de" }
   s.source           = { :git => "https://github.com/stanft/ImagePicker.git", :tag => s.version.to_s }
-  s.social_media_url = 'https://twitter.com/hyperoslo'
   s.platform     = :ios, '8.0'
   s.requires_arc = true
   s.source_files = 'Source/**/*'
