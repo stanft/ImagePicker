@@ -386,7 +386,7 @@ extension ImagePickerController: CameraViewDelegate {
   }
 
   func imageToLibrary() {
-    guard let collectionSize = galleryView.collectionSize else { return }
+//    guard let collectionSize = galleryView.collectionSize else { return }
 
     galleryView.fetchPhotos() {
       guard let asset = self.galleryView.assets.first else { return }
@@ -395,11 +395,11 @@ extension ImagePickerController: CameraViewDelegate {
     galleryView.shouldTransform = true
     bottomContainer.pickerButton.enabled = true
 
-    UIView.animateWithDuration(0.3, animations: {
-      self.galleryView.collectionView.transform = CGAffineTransformMakeTranslation(collectionSize.width, 0)
-      }) { _ in
-        self.galleryView.collectionView.transform = CGAffineTransformIdentity
-    }
+//    UIView.animateWithDuration(0.3, animations: {
+//      self.galleryView.collectionView.transform = CGAffineTransformMakeTranslation(collectionSize.width, 0)
+//      }) { _ in
+//        self.galleryView.collectionView.transform = CGAffineTransformIdentity
+//    }
   }
 
   func cameraNotAvailable() {
