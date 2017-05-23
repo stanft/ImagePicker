@@ -212,6 +212,8 @@ class CameraMan {
         queue.async {
             self.lock {
                 device.focusPointOfInterest = point
+                // Focus has to be set otherwise focus is not updated
+                device.focusMode = .continuousAutoFocus
             }
         }
     }

@@ -267,36 +267,33 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     func timerDidFire() {
         UIView.animate(withDuration: 0.3, animations: { [unowned self] in
             self.focusImageView.alpha = 0
-        }, completion: { _ in
-            self.focusImageView.transform = CGAffineTransform.identity
         })
     }
 
     // MARK: - Camera methods
 
     func focusTo(_ point: CGPoint) {
-        let convertedPoint = CGPoint(x: point.x / UIScreen.main.bounds.width,
-                y: point.y / UIScreen.main.bounds.height)
+        if let convertedPoint = previewLayer?.captureDevicePointOfInterest(for: point) {
+            cameraMan.focus(convertedPoint)
 
-        cameraMan.focus(convertedPoint)
+            focusImageView.center = point
+            UIView.animate(withDuration: 0.5, animations: { _ in
+                self.focusImageView.alpha = 1
+                self.focusImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
+            }, completion: { _ in
+                self.animationTimer = Timer.scheduledTimer(timeInterval: 1, target: self,
+                        selector: #selector(CameraView.timerDidFire), userInfo: nil, repeats: false)
+            })
 
-        focusImageView.center = point
-        UIView.animate(withDuration: 0.5, animations: { _ in
-            self.focusImageView.alpha = 1
-            self.focusImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
-        }, completion: { _ in
-            self.animationTimer = Timer.scheduledTimer(timeInterval: 1, target: self,
-                    selector: #selector(CameraView.timerDidFire), userInfo: nil, repeats: false)
-        })
+        }
+
+
     }
 
     // MARK: - Tap
 
     func tapGestureRecognizerHandler(_ gesture: UITapGestureRecognizer) {
         let touch = gesture.location(in: view)
-
-        focusImageView.transform = CGAffineTransform.identity
-        animationTimer?.invalidate()
         focusTo(touch)
     }
 
