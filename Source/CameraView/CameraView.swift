@@ -61,8 +61,8 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
         let button = UIButton(type: .system)
         let title = NSAttributedString(string: self.configuration.settingsTitle,
                 attributes: [
-                        NSFontAttributeName: self.configuration.settingsFont,
-                        NSForegroundColorAttributeName: self.configuration.settingsColor,
+                        NSAttributedStringKey.font: self.configuration.settingsFont,
+                        NSAttributedStringKey.foregroundColor: self.configuration.settingsColor,
                 ])
 
         button.setAttributedTitle(title, for: UIControlState())
@@ -140,26 +140,24 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     func updateCameraOrientation() {
         switch UIDevice.current.orientation {
         case .portrait:
-            previewLayer?.connection.videoOrientation = .portrait
+            previewLayer?.connection?.videoOrientation = .portrait
         case .landscapeLeft:
-            previewLayer?.connection.videoOrientation = .landscapeRight
+            previewLayer?.connection?.videoOrientation = .landscapeRight
         case .landscapeRight:
-            previewLayer?.connection.videoOrientation = .landscapeLeft
+            previewLayer?.connection?.videoOrientation = .landscapeLeft
         case .portraitUpsideDown:
-            previewLayer?.connection.videoOrientation = .portraitUpsideDown
+            previewLayer?.connection?.videoOrientation = .portraitUpsideDown
         default:
             break
         }
     }
 
     func setupPreviewLayer() {
-        guard let layer = AVCaptureVideoPreviewLayer(session: cameraMan.session) else {
-            return
-        }
+        let layer = AVCaptureVideoPreviewLayer(session: cameraMan.session)
 
         layer.backgroundColor = configuration.mainColor.cgColor
         layer.autoreverses = true
-        layer.videoGravity = AVLayerVideoGravityResizeAspectFill
+        layer.videoGravity = AVLayerVideoGravity.resizeAspectFill
 
         view.layer.insertSublayer(layer, at: 0)
         layer.frame = view.layer.frame
@@ -206,13 +204,13 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     }
 
     private func updatePreviewLayer(orientation: AVCaptureVideoOrientation) {
-        previewLayer?.connection.videoOrientation = orientation
+        previewLayer?.connection?.videoOrientation = orientation
         previewLayer?.frame = self.view.bounds
     }
 
     // MARK: - Actions
 
-    func settingsButtonDidTap() {
+    @objc func settingsButtonDidTap() {
         DispatchQueue.main.async {
             if let settingsURL = URL(string: UIApplicationOpenSettingsURLString) {
                 UIApplication.shared.openURL(settingsURL)
@@ -223,7 +221,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     // MARK: - Camera actions
 
     func rotateCamera() {
-        UIView.animate(withDuration: 0.3, animations: { _ in
+        UIView.animate(withDuration: 0.3, animations: { 
             self.containerView.alpha = 1
         }, completion: { _ in
             self.cameraMan.switchCamera {
@@ -235,7 +233,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     }
 
     func flashCamera(_ title: String) {
-        let mapping: [String: AVCaptureFlashMode] = [
+        let mapping: [String: AVCaptureDevice.FlashMode] = [
                 "ON": .on,
                 "OFF": .off
         ]
@@ -264,7 +262,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
 
     // MARK: - Timer methods
 
-    func timerDidFire() {
+    @objc func timerDidFire() {
         UIView.animate(withDuration: 0.3, animations: { [unowned self] in
             self.focusImageView.alpha = 0
         })
@@ -273,11 +271,11 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     // MARK: - Camera methods
 
     func focusTo(_ point: CGPoint) {
-        if let convertedPoint = previewLayer?.captureDevicePointOfInterest(for: point) {
+        if let convertedPoint = previewLayer?.captureDevicePointConverted(fromLayerPoint: point) {
             cameraMan.focus(convertedPoint)
 
             focusImageView.center = point
-            UIView.animate(withDuration: 0.5, animations: { _ in
+            UIView.animate(withDuration: 0.5, animations: { 
                 self.focusImageView.alpha = 1
                 self.focusImageView.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
             }, completion: { _ in
@@ -292,7 +290,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
 
     // MARK: - Tap
 
-    func tapGestureRecognizerHandler(_ gesture: UITapGestureRecognizer) {
+    @objc func tapGestureRecognizerHandler(_ gesture: UITapGestureRecognizer) {
         let touch = gesture.location(in: view)
         focusTo(touch)
     }

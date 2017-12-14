@@ -218,7 +218,7 @@ extension ImageGalleryView: UICollectionViewDelegate {
             } else if self.imageLimit == 0 || self.imageLimit > self.selectedStack.assets.count {
                 cell.selectedImageView.image = AssetManager.getImage("selectedImageGallery")
                 cell.selectedImageView.transform = CGAffineTransform(scaleX: 0, y: 0)
-                UIView.animate(withDuration: 0.2, animations: { _ in
+                UIView.animate(withDuration: 0.2, animations: { 
                     cell.selectedImageView.transform = CGAffineTransform.identity
                 })
                 self.selectedStack.pushAsset(asset)

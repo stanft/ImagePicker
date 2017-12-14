@@ -243,13 +243,13 @@ open class ImagePickerController: UIViewController {
                 object: nil)
     }
 
-    func didReloadAssets(_ notification: Notification) {
+    @objc func didReloadAssets(_ notification: Notification) {
         adjustButtonTitle(notification)
         galleryView.collectionView.reloadData()
         galleryView.collectionView.setContentOffset(CGPoint.zero, animated: false)
     }
 
-    func volumeChanged(_ notification: Notification) {
+    @objc func volumeChanged(_ notification: Notification) {
         guard let slider = volumeView.subviews.filter({ $0 is UISlider }).first as? UISlider,
               let userInfo = (notification as NSNotification).userInfo,
               let changeReason = userInfo["AVSystemController_AudioVolumeChangeReasonNotificationParameter"] as? String, changeReason == "ExplicitVolumeChange" else {
@@ -260,7 +260,7 @@ open class ImagePickerController: UIViewController {
         takePicture()
     }
 
-    func adjustButtonTitle(_ notification: Notification) {
+    @objc func adjustButtonTitle(_ notification: Notification) {
         guard let sender = notification.object as? ImageStack else {
             return
         }
@@ -334,7 +334,7 @@ open class ImagePickerController: UIViewController {
         isTakingPicture = true
         bottomContainer.pickerButton.isEnabled = false
         bottomContainer.stackView.startLoader()
-        let action: (Void) -> Void = { [unowned self] in
+        let action: () -> Void = { [unowned self] in
             self.cameraController.takePicture {
                 self.isTakingPicture = false
             }
@@ -451,7 +451,7 @@ extension ImagePickerController: CameraViewDelegate {
         return .portrait
     }
 
-    public func handleRotation(_ note: Notification) {
+    @objc public func handleRotation(_ note: Notification) {
         galleryView.frame = CGRect(x: 0,
                 y: totalSize.height - bottomContainer.frame.height - ImageGalleryView.Dimensions.galleryHeight,
                 width: totalSize.width,
