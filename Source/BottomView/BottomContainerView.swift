@@ -18,7 +18,7 @@ open class BottomContainerView: UIView {
 
   lazy var pickerButton: ButtonPicker = { [unowned self] in
     let pickerButton = ButtonPicker()
-    pickerButton.setTitleColor(UIColor.white, for: UIControlState())
+    pickerButton.setTitleColor(UIColor.white, for: UIControl.State())
     pickerButton.delegate = self
 
     return pickerButton
@@ -36,7 +36,7 @@ open class BottomContainerView: UIView {
 
   open lazy var doneButton: UIButton = { [unowned self] in
     let button = UIButton()
-    button.setTitle(self.configuration.cancelButtonTitle, for: UIControlState())
+    button.setTitle(self.configuration.cancelButtonTitle, for: UIControl.State())
     button.titleLabel?.font = self.configuration.doneButton
     button.addTarget(self, action: #selector(doneButtonDidPress(_:)), for: .touchUpInside)
 

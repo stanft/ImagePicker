@@ -35,7 +35,7 @@ class CameraMan {
     func setupDevices() {
         // Input
         AVCaptureDevice
-                .devices().flatMap {
+            .devices().compactMap {
             return $0 as AVCaptureDevice
         }.filter {
             return $0.hasMediaType(AVMediaType.video)
